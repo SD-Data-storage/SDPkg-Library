@@ -1,0 +1,8 @@
+{
+    "file_info": {
+        "windows": {
+          "amd64": "https://github.com/SD-Data-storage/SDPkg-Library/raw/refs/heads/main/packages/firefox-esr/file_list_windows_amd64.json",
+          "i686": "https://github.com/SD-Data-storage/SDPkg-Library/raw/refs/heads/main/packages/firefox-esr/file_list_windows_i686.json"
+        }
+    }
+}
