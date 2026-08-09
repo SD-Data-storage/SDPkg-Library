@@ -1,0 +1,13 @@
+{
+   "requirements": [],
+   "files": {
+       "firefox-amd64.tar.gz": {
+         "url": "https://download.mozilla.org/?product=firefox-esr-latest-ssl&os=linux64&lang=en-US",
+         "type": "file"
+       },
+       "install.py": {
+         "url": "https://github.com/SD-Data-storage/SDPkg-Library/raw/refs/heads/main/packages/firefox/install_linux.py",
+         "type": "file"
+       }
+   } 
+}
