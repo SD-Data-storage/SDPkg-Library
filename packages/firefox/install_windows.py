@@ -140,7 +140,7 @@ def extract_firefox_installation_from_msi(msi_path, output_path):
 
 def main():
     app_dir = os.path.dirname(__file__)
-    msi_file_name_list = ["Firefox Setup amd64.msi", "Firefox Setup x86_64.msi", "Firefox Setup arm64.msi"]
+    msi_file_name_list = ["Firefox Setup amd64.msi", "Firefox Setup i686.msi", "Firefox Setup arm64.msi"]
     for item in msi_file_name_list:
         msi_path = os.path.join(app_dir, item)
         if os.path.exists(msi_path):
