@@ -1,0 +1,21 @@
+{
+    "file_info": {
+        "windows": {
+          "amd64": "https://github.com/SD-Data-storage/SDPkg-Library/raw/refs/heads/main/packages/ruffle/file_list.json",
+          "arm64": "https://github.com/SD-Data-storage/SDPkg-Library/raw/refs/heads/main/packages/ruffle/file_list.json",
+          "i686": "https://github.com/SD-Data-storage/SDPkg-Library/raw/refs/heads/main/packages/ruffle/file_list.json",
+          "i586": "https://github.com/SD-Data-storage/SDPkg-Library/raw/refs/heads/main/packages/ruffle/file_list.json",
+          "i486": "https://github.com/SD-Data-storage/SDPkg-Library/raw/refs/heads/main/packages/ruffle/file_list.json",
+          "i386": "https://github.com/SD-Data-storage/SDPkg-Library/raw/refs/heads/main/packages/ruffle/file_list.json"
+        },
+        "linux": {
+          "amd64": "https://github.com/SD-Data-storage/SDPkg-Library/raw/refs/heads/main/packages/ruffle/file_list.json",
+          "arm64": "https://github.com/SD-Data-storage/SDPkg-Library/raw/refs/heads/main/packages/ruffle/file_list.json",
+          "arm32": "https://github.com/SD-Data-storage/SDPkg-Library/raw/refs/heads/main/packages/ruffle/file_list.json",
+          "i686": "https://github.com/SD-Data-storage/SDPkg-Library/raw/refs/heads/main/packages/ruffle/file_list.json",
+          "i586": "https://github.com/SD-Data-storage/SDPkg-Library/raw/refs/heads/main/packages/ruffle/file_list.json",
+          "i486": "https://github.com/SD-Data-storage/SDPkg-Library/raw/refs/heads/main/packages/ruffle/file_list.json",
+          "i386": "https://github.com/SD-Data-storage/SDPkg-Library/raw/refs/heads/main/packages/ruffle/file_list.json"
+        }
+    }
+}
