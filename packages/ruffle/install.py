@@ -2,98 +2,71 @@ import os
 import re
 import sys
 from html.parser import HTMLParser
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-from sdpkg import download_file, fetch_contents, extract_zip, copy_directory_contents, remove_directory
+
+sys.path.append(
+    os.path.dirname(
+        os.path.dirname(
+            os.path.dirname(__file__)
+        )
+    )
+)
+
+from sdpkg import (
+    download_file,
+    fetch_contents,
+    extract_zip,
+    copy_directory_contents,
+    remove_directory,
+)
+
 
 DOWNLOADS_URL = "https://ruffle.rs/downloads"
 
 
 class RuffleDownloadsParser(HTMLParser):
     """
-    Parses the releases table from ruffle.rs/downloads.
+    Parses Ruffle's downloads page without depending on
+    a specific table/class structure.
 
-    Extracts rows in the form:
-
-        {
-            "version": "0.5.0",
-            "downloads": {
-                "Windows (64-bit)": "...",
-                "Windows (32-bit)": "...",
-                "macOS": "...",
-                "Linux (x86_64)": "...",
-                "Linux (ARM64)": "...",
-                ...
-            }
-        }
+    Collects every link on the page together with its
+    surrounding visible text.
     """
 
     def __init__(self):
         super().__init__()
 
-        self.in_table = False
-        self.in_row = False
-        self.in_cell = False
         self.in_link = False
-
-        self.current_cell = []
         self.current_href = None
-        self.current_row = []
+        self.current_text = []
 
-        self.rows = []
+        self.links = []
 
     def handle_starttag(self, tag, attrs):
         attrs = dict(attrs)
 
-        if tag == "table":
-            classes = attrs.get("class", "")
-
-            # The releases table contains "releases-module" in its classes.
-            if "releases-module" in classes:
-                self.in_table = True
-
-        elif self.in_table and tag == "tr":
-            self.in_row = True
-            self.current_row = []
-
-        elif self.in_row and tag in ("td", "th"):
-            self.in_cell = True
-            self.current_cell = []
-
-        elif self.in_cell and tag == "a":
+        if tag == "a":
             self.in_link = True
             self.current_href = attrs.get("href")
+            self.current_text = []
 
     def handle_data(self, data):
-        if self.in_cell:
-            self.current_cell.append(data)
+        if self.in_link:
+            self.current_text.append(data)
 
     def handle_endtag(self, tag):
         if tag == "a" and self.in_link:
-            self.in_link = False
-
-        elif tag in ("td", "th") and self.in_cell:
             text = " ".join(
-                "".join(self.current_cell).split()
+                "".join(self.current_text).split()
             )
 
-            self.current_row.append({
+            self.links.append({
                 "text": text,
-                "href": self.current_href
+                "href": self.current_href,
             })
 
-            self.current_cell = []
+            self.in_link = False
             self.current_href = None
-            self.in_cell = False
-
-        elif tag == "tr" and self.in_row:
-            if self.current_row:
-                self.rows.append(self.current_row)
-
-            self.current_row = []
-            self.in_row = False
-
-        elif tag == "table" and self.in_table:
-            self.in_table = False
+            self.current_text = []
 
 
 def fetch_download_page():
@@ -104,47 +77,6 @@ def fetch_download_page():
     return fetch_contents(DOWNLOADS_URL)
 
 
-def parse_releases(html):
-    """
-    Parse the releases table and return normalized release dictionaries.
-    """
-
-    parser = RuffleDownloadsParser()
-    parser.feed(html)
-
-    releases = []
-
-    for row in parser.rows:
-        if not row:
-            continue
-
-        version = row[0]["text"]
-
-        # Skip the header row.
-        if version.lower() == "version":
-            continue
-
-        # Only accept version-looking rows.
-        if not re.fullmatch(r"\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?", version):
-            continue
-
-        downloads = {}
-
-        for cell in row[1:]:
-            name = cell["text"]
-            href = cell["href"]
-
-            if name and href:
-                downloads[name] = href
-
-        releases.append({
-            "version": version,
-            "downloads": downloads
-        })
-
-    return releases
-
-
 def version_key(version):
     """
     Convert a Ruffle version into something sortable.
@@ -153,52 +85,169 @@ def version_key(version):
         0.5.0 -> (0, 5, 0)
     """
 
-    match = re.match(r"^(\d+)\.(\d+)\.(\d+)", version)
+    match = re.match(
+        r"^(\d+)\.(\d+)\.(\d+)",
+        version
+    )
 
     if not match:
         return (0, 0, 0)
 
-    return tuple(int(x) for x in match.groups())
+    return tuple(
+        int(x)
+        for x in match.groups()
+    )
+
+
+def normalize_url(url):
+    """
+    Convert relative Ruffle URLs into absolute URLs.
+    """
+
+    if not url:
+        return None
+
+    if url.startswith("//"):
+        return "https:" + url
+
+    if url.startswith("/"):
+        return "https://ruffle.rs" + url
+
+    if url.startswith("http://"):
+        return url
+
+    if url.startswith("https://"):
+        return url
+
+    return "https://ruffle.rs/" + url.lstrip("/")
+
+
+def parse_releases(html):
+    """
+    Parse Ruffle releases from download links.
+
+    This parser intentionally does not depend on the
+    current HTML table/class layout.
+    """
+
+    parser = RuffleDownloadsParser()
+    parser.feed(html)
+
+    releases = {}
+
+    for link in parser.links:
+        text = link["text"]
+        href = normalize_url(link["href"])
+
+        if not href:
+            continue
+
+        # Look for a Ruffle version in either the visible
+        # link text or the download URL.
+        combined = f"{text} {href}"
+
+        matches = re.findall(
+            r"\b(\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?)\b",
+            combined
+        )
+
+        if not matches:
+            continue
+
+        version = matches[0]
+
+        # Only consider actual Ruffle-looking downloads.
+        lower = combined.lower()
+
+        if "ruffle" not in lower:
+            continue
+
+        # Ignore unrelated links.
+        if not (
+            href.lower().endswith(".zip")
+            or ".zip?" in href.lower()
+        ):
+            continue
+
+        if version not in releases:
+            releases[version] = {
+                "version": version,
+                "downloads": []
+            }
+
+        releases[version]["downloads"].append({
+            "text": text,
+            "href": href,
+        })
+
+    return list(releases.values())
 
 
 def find_latest_release(releases):
     if not releases:
         raise RuntimeError(
-            "Ruffle downloads page was parsed successfully, "
-            "but no releases were found."
+            "Ruffle downloads page was fetched successfully, "
+            "but no Ruffle ZIP releases could be detected. "
+            "The download URL format may have changed."
         )
 
     return max(
         releases,
-        key=lambda release: version_key(release["version"])
+        key=lambda release: version_key(
+            release["version"]
+        )
     )
 
 
 def find_windows_x64(release):
     """
-    Find the Windows 64-bit desktop download.
+    Find the Windows 64-bit desktop ZIP.
+
+    Uses several indicators because the visible
+    label/filename may change.
     """
 
-    downloads = release["downloads"]
+    candidates = release["downloads"]
 
-    # Prefer the exact label used by the Ruffle downloads page.
-    if "Windows (64-bit)" in downloads:
-        return downloads["Windows (64-bit)"]
-
-    # Fallback in case Ruffle changes the visible label.
-    for name, url in downloads.items():
-        normalized = name.lower()
+    # First try the visible text.
+    for item in candidates:
+        text = item["text"].lower()
+        href = item["href"].lower()
 
         if (
-            "windows" in normalized
-            and "64" in normalized
-            and url.lower().endswith(".zip")
+            "windows" in text
+            and (
+                "64-bit" in text
+                or "64 bit" in text
+                or "x64" in text
+            )
         ):
-            return url
+            return item["href"]
+
+    # Then inspect the filename.
+    for item in candidates:
+        text = item["text"].lower()
+        href = item["href"].lower()
+
+        combined = text + " " + href
+
+        if "windows" not in combined:
+            continue
+
+        if not (
+            "x64" in combined
+            or "win64" in combined
+            or "64-bit" in combined
+            or "64bit" in combined
+        ):
+            continue
+
+        if href.endswith(".zip"):
+            return item["href"]
 
     raise RuntimeError(
-        f"Could not find a Windows 64-bit desktop download "
-        f"for Ruffle {release['version']}."
+        f"Could not find a Windows 64-bit desktop "
+        f"download for Ruffle {release['version']}."
     )
 
 
@@ -210,9 +259,9 @@ def main():
     print("SDPkg: Installing Ruffle")
     print()
 
-    # ------------------------------------------------------------
+    # --------------------------------------------------------
     # Determine package directory
-    # ------------------------------------------------------------
+    # --------------------------------------------------------
 
     package_dir = os.path.dirname(
         os.path.abspath(__file__)
@@ -228,9 +277,9 @@ def main():
         "ruffle"
     )
 
-    # ------------------------------------------------------------
+    # --------------------------------------------------------
     # Fetch Ruffle downloads page
-    # ------------------------------------------------------------
+    # --------------------------------------------------------
 
     print("Fetching Ruffle downloads page...")
 
@@ -240,9 +289,9 @@ def main():
         f"Received {len(html):,} bytes."
     )
 
-    # ------------------------------------------------------------
+    # --------------------------------------------------------
     # Parse releases
-    # ------------------------------------------------------------
+    # --------------------------------------------------------
 
     releases = parse_releases(html)
 
@@ -252,15 +301,18 @@ def main():
 
     if not releases:
         raise RuntimeError(
-            "The Ruffle releases table could not be parsed. "
-            "The page structure may have changed."
+            "The Ruffle downloads page was fetched successfully, "
+            "but no releases could be detected. "
+            "The page's download-link structure may have changed."
         )
 
-    # ------------------------------------------------------------
+    # --------------------------------------------------------
     # Select latest release
-    # ------------------------------------------------------------
+    # --------------------------------------------------------
 
-    release = find_latest_release(releases)
+    release = find_latest_release(
+        releases
+    )
 
     version = release["version"]
 
@@ -268,35 +320,41 @@ def main():
         f"Latest Ruffle release: {version}"
     )
 
-    # ------------------------------------------------------------
+    # --------------------------------------------------------
     # Select Windows x64 desktop build
-    # ------------------------------------------------------------
+    # --------------------------------------------------------
 
-    download_url = find_windows_x64(release)
+    download_url = find_windows_x64(
+        release
+    )
 
     print(
-        f"Selected Windows 64-bit build:"
+        "Selected Windows 64-bit build:"
     )
     print(
         f"  {download_url}"
     )
     print()
 
-    # ------------------------------------------------------------
+    # --------------------------------------------------------
     # Download
-    # ------------------------------------------------------------
+    # --------------------------------------------------------
 
     if os.path.exists(archive_path):
         os.remove(archive_path)
+
+    print("Downloading Ruffle...")
 
     download_file(
         download_url,
         archive_path
     )
 
-    # ------------------------------------------------------------
+    # --------------------------------------------------------
     # Extract
-    # ------------------------------------------------------------
+    # --------------------------------------------------------
+
+    print("Extracting Ruffle...")
 
     os.makedirs(
         install_dir,
@@ -308,16 +366,23 @@ def main():
         install_dir
     )
 
-    # ------------------------------------------------------------
+    # --------------------------------------------------------
     # Remove temporary archive
-    # ------------------------------------------------------------
+    # --------------------------------------------------------
 
-    os.remove(archive_path)
+    if os.path.exists(archive_path):
+        os.remove(archive_path)
 
     print()
-    print("Ruffle installation completed successfully.")
-    print(f"Version: {version}")
-    print(f"Files:   {install_dir}")
+    print(
+        "Ruffle installation completed successfully."
+    )
+    print(
+        f"Version: {version}"
+    )
+    print(
+        f"Files:   {install_dir}"
+    )
 
 
 if __name__ == "__main__":
