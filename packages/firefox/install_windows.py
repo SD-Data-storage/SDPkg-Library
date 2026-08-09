@@ -8,7 +8,7 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 from sdpkg import copy_directory_contents
 
-SEVEN_ZIP = os.path.join(os.path.dirname(os.path.dirname(__file__)), "7-zip", "7zip", "iles", "7-Zip", "7z.exe") #r"D:\Programs\7-Zip\7z.exe"
+SEVEN_ZIP = os.path.join(os.path.dirname(os.path.dirname(__file__)), "7-zip", "7zip", "Files", "7-Zip", "7z.exe") #r"D:\Programs\7-Zip\7z.exe"
 
 _GUID_RE = re.compile(
     r"^\{[0-9A-Fa-f]{8}-"
