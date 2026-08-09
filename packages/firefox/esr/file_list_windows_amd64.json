@@ -1,0 +1,13 @@
+{
+   "requirements": ["7-zip"],
+   "files": {
+       "Firefox Setup amd64.msi": {
+         "url": "https://download.mozilla.org/?product=firefox-esr-msi-latest-ssl&os=win64&lang=en-US",
+         "type": "file"
+       },
+       "install.py": {
+         "url": "https://github.com/SD-Data-storage/SDPkg-Library/raw/refs/heads/main/packages/firefox/install_windows.py",
+         "type": "file"
+       }
+   } 
+}
