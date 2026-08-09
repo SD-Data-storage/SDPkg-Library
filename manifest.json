@@ -1,4 +1,4 @@
 {
   "pkg_manifest_url": "https://raw.githubusercontent.com/SD-Data-storage/SDAppStore-Library/refs/heads/main/packages/{id}/manifest.json",
-  "packages": ["google_chrome", "vs_code", "windows_subsystem_for_android", "7-zip", "vlc_media_player", "notepad++", "ruffle", "firefox"]
+  "packages": ["google_chrome", "vs_code", "windows_subsystem_for_android", "7-zip", "vlc_media_player", "notepad++", "ruffle", "firefox", "firefox-esr"]
 }
