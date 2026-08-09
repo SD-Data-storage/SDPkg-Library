@@ -1,0 +1,8 @@
+{
+  "files": {
+    "install.py": {
+      "url": "https://github.com/SD-Data-storage/SDPkg-Library/raw/refs/heads/main/packages/ruffle/install.py",
+      "type": "file"
+    }
+  }
+}
