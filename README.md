@@ -1,2 +1,2 @@
 # SDPkg-Library
-Database for apps on SDAppStore
+Database for apps on SDPkg
