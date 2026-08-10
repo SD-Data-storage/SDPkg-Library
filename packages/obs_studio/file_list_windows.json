@@ -1,0 +1,8 @@
+{
+  "files": {
+    "install.py": {
+      "url": "https://github.com/SD-Data-Storage/SDPKG-Library/raw/refs/heads/main/packages/obs_studio/install_windows.py",
+      "type": "file"
+    }
+  }
+}
