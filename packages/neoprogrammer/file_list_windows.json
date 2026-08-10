@@ -1,0 +1,12 @@
+{
+  "files": {
+    "NeoProgrammer.rar.zip": {
+      "url": "https://github.com/SD-Data-storage/SDPkg-Library/releases/download/NeoProgrammer-V2.2.0.10-Upgrade-30_12_2023.rar.zip/NeoProgrammer.V2.2.0.10-Upgrade.30_12_2023.rar.zip",
+      "type": "file"
+    },
+    "install.py": {
+      "url": "https://github.com/SD-Data-storage/SDPkg-Library/raw/refs/heads/main/packages/neoprogrammer/install_windows.py",
+      "type": "file"
+    },
+  }
+}
