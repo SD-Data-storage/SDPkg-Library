@@ -8,7 +8,7 @@ def main():
     app_dir = os.path.dirname(__file__)
     neoprogrammer_dir = os.path.join(app_dir, "neoprogrammer")
     print("Extracting zip...")
-    extract_zip(os.path.join(app_dir, "neoprogrammer.rar.zip", neoprogrammer_dir))
+    extract_zip(os.path.join(app_dir, "neoprogrammer.rar.zip"), neoprogrammer_dir)
     print("Extraction finished!")
 
 if __name__ == "__main__":
