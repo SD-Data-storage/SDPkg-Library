@@ -1,0 +1,11 @@
+{
+    "file_info": {
+        "windows": {
+          "amd64": "https://github.com/SD-Data-storage/SDPkg-Library/raw/refs/heads/main/packages/neoprogrammer/file_list_windows.json",
+          "i686": "https://github.com/SD-Data-storage/SDPkg-Library/raw/refs/heads/main/packages/neoprogrammer/file_list_windows.json",
+          "i586": "https://github.com/SD-Data-storage/SDPkg-Library/raw/refs/heads/main/packages/neoprogrammer/file_list_windows.json",
+          "i486": "https://github.com/SD-Data-storage/SDPkg-Library/raw/refs/heads/main/packages/neoprogrammer/file_list_windows.json",
+          "i386": "https://github.com/SD-Data-storage/SDPkg-Library/raw/refs/heads/main/packages/neoprogrammer/file_list_windows.json"
+        }
+    }
+}
